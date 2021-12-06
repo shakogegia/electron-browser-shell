@@ -1,4 +1,4 @@
-import { Menu, MenuItem, protocol, nativeImage, app } from 'electron'
+import { Menu, MenuItem, protocol, nativeImage, app, session } from 'electron'
 import { ExtensionContext } from '../context'
 import { PopupView } from '../popup'
 import { ExtensionEvent } from '../router'
@@ -180,6 +180,8 @@ export class BrowserActionAPI {
     })
 
     this.setupSession(this.ctx.session)
+    
+    this.registerCrxProtocol(session.defaultSession)
   }
 
   private setupSession(session: Electron.Session) {
@@ -191,6 +193,10 @@ export class BrowserActionAPI {
       this.removeActions(extension.id)
     })
 
+    this.registerCrxProtocol(session)
+  }
+
+  private registerCrxProtocol(session: Electron.Session) {
     session.protocol.registerBufferProtocol('crx', this.handleCrxRequest)
   }
 
@@ -216,7 +222,6 @@ export class BrowserActionAPI {
           const resizeType = parseInt(fragments[3], 10) || ResizeType.Up
 
           const extension = this.ctx.session.getExtension(extensionId)
-
           let iconDetails: chrome.browserAction.TabIconDetails | undefined
 
           const action = this.actionMap.get(extensionId)
